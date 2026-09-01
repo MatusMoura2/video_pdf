@@ -47,43 +47,78 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoUpload = document.getElementById('video-upload');
     const videoEl = document.getElementById('main-video');
     const statusIndicator = document.getElementById('status-indicator');
+    const urlInput = document.getElementById('url-input');
+    const btnImportUrl = document.getElementById('btn-import-url');
     let pollingInterval = null;
 
+    // Handle Local File Upload
     videoUpload.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if(!file) return;
         
-        // 1. Set local video preview immediately
         const localUrl = URL.createObjectURL(file);
         videoEl.src = localUrl;
         
-        // 2. Upload to server to start transcription
         statusIndicator.innerText = "Fazendo upload...";
-        statusIndicator.style.color = "#3b82f6"; // Blue
+        statusIndicator.style.color = "#3b82f6";
         
         const formData = new FormData();
         formData.append("video", file);
         
         try {
-            const uploadRes = await fetch("/api/upload", {
-                method: "POST",
-                body: formData
-            });
-            const uploadData = await uploadRes.json();
-            
-            if (uploadData.status === "started") {
-                statusIndicator.innerText = "IA iniciada...";
-                pollStatus(uploadData.task_id);
-            } else {
-                statusIndicator.innerText = "Erro ao iniciar IA";
-                statusIndicator.style.color = "#ef4444"; // Red
-            }
+            const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
+            handleUploadResponse(uploadRes);
         } catch(err) {
-            console.error("Upload error:", err);
-            statusIndicator.innerText = "Erro no upload";
-            statusIndicator.style.color = "#ef4444";
+            handleError(err);
         }
     });
+
+    // Handle URL Import
+    btnImportUrl.addEventListener('click', async () => {
+        const url = urlInput.value.trim();
+        if(!url) {
+            alert("Por favor, insira uma URL válida.");
+            return;
+        }
+        
+        statusIndicator.innerText = "Iniciando download...";
+        statusIndicator.style.color = "#3b82f6";
+        
+        try {
+            const uploadRes = await fetch("/api/url-upload", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url: url })
+            });
+            handleUploadResponse(uploadRes, true);
+        } catch(err) {
+            handleError(err);
+        }
+    });
+
+    async function handleUploadResponse(response, isUrl = false) {
+        const data = await response.json();
+        if (data.status === "started") {
+            statusIndicator.innerText = "IA iniciada...";
+            if (isUrl) {
+                // If it's a URL, wait to set the video source until it's ready, 
+                // or just set it to the backend streaming path. 
+                // For simplicity, we just point the video player to the static file path immediately.
+                // It might not play until downloaded, but timeupdate will sync when it does.
+                videoEl.src = data.video_url;
+            }
+            pollStatus(data.task_id);
+        } else {
+            statusIndicator.innerText = "Erro ao iniciar IA";
+            statusIndicator.style.color = "#ef4444";
+        }
+    }
+
+    function handleError(err) {
+        console.error("Upload error:", err);
+        statusIndicator.innerText = "Erro de conexão";
+        statusIndicator.style.color = "#ef4444";
+    }
     
     function pollStatus(taskId) {
         if(pollingInterval) clearInterval(pollingInterval);

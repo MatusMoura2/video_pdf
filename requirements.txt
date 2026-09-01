@@ -6,3 +6,4 @@ pydantic
 jinja2
 faster-whisper
 fpdf2
+yt-dlp

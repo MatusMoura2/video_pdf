@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Optional
 
 from app.services.whisper_service import process_video_transcription
+from app.services.download_service import download_video_from_url
 
 app = FastAPI(title="Video PDF Player API")
 
@@ -26,9 +27,50 @@ templates = Jinja2Templates(directory=BASE_DIR / "static")
 # Dictionary to hold task statuses (for a production app, use Redis/Celery)
 transcription_tasks = {}
 
+class URLUploadRequest(BaseModel):
+    url: str
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
+
+def background_download_and_transcribe(url: str, video_path: Path, task_id: str, status_dict: dict):
+    try:
+        status_dict[task_id] = {"status": "processing", "progress": "Baixando vídeo da URL..."}
+        download_video_from_url(url, video_path)
+        # Proceed to transcription now that download is complete
+        process_video_transcription(video_path, task_id, status_dict)
+    except Exception as e:
+        status_dict[task_id] = {"status": "error", "detail": f"Erro no download: {str(e)}"}
+
+@app.post("/api/url-upload")
+async def upload_url(
+    req: URLUploadRequest,
+    background_tasks: BackgroundTasks
+):
+    """
+    Download a video from a public URL and start background transcription.
+    """
+    if not req.url:
+        raise HTTPException(status_code=400, detail="URL não fornecida.")
+        
+    task_id = str(uuid.uuid4())
+    video_filename = f"{task_id}_download.mp4"
+    video_path = STORAGE_DIR / video_filename
+    
+    background_tasks.add_task(
+        background_download_and_transcribe, 
+        req.url,
+        video_path, 
+        task_id, 
+        transcription_tasks
+    )
+        
+    return {
+        "status": "started", 
+        "task_id": task_id,
+        "video_url": f"/storage/{video_filename}"
+    }
 
 @app.post("/api/upload")
 async def upload_files(

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video PDF Player - Sincronizado</title>
+    <title>MF Video IA Transcritor</title>
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <!-- Main Style -->
@@ -13,9 +13,15 @@
     <div class="app-container">
         <!-- Header -->
         <header class="app-header glass">
-            <div class="logo">Video IA <span>Transcritor</span></div>
-            <div class="upload-controls">
-                <label for="video-upload" class="btn">Carregar Vídeo para Transcrição</label>
+            <div class="logo">MF Video IA <span>Transcritor</span></div>
+            <div class="upload-controls" style="display:flex; gap:10px; align-items:center;">
+                <!-- URL input for public videos -->
+                <input type="text" id="url-input" placeholder="Cole o link do vídeo (YouTube, etc)" style="padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; width: 250px;">
+                <button id="btn-import-url" class="btn" style="margin-left: 0;">Importar Link</button>
+                
+                <span style="color:#64748b; margin: 0 5px;">ou</span>
+                
+                <label for="video-upload" class="btn" style="margin-left: 0;">Carregar Arquivo</label>
                 <input type="file" id="video-upload" accept="video/mp4,video/webm" hidden>
             </div>
         </header>
