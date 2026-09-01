@@ -4,3 +4,5 @@ python-multipart
 pdfplumber
 pydantic
 jinja2
+faster-whisper
+fpdf2

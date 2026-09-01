@@ -13,13 +13,10 @@
     <div class="app-container">
         <!-- Header -->
         <header class="app-header glass">
-            <div class="logo">Video PDF <span>Sync</span></div>
+            <div class="logo">Video IA <span>Transcritor</span></div>
             <div class="upload-controls">
-                <label for="video-upload" class="btn">Carregar Vídeo</label>
+                <label for="video-upload" class="btn">Carregar Vídeo para Transcrição</label>
                 <input type="file" id="video-upload" accept="video/mp4,video/webm" hidden>
-                
-                <label for="pdf-upload" class="btn">Carregar PDF</label>
-                <input type="file" id="pdf-upload" accept="application/pdf" hidden>
             </div>
         </header>
 
@@ -38,19 +35,24 @@
             <!-- Resizer Divider -->
             <div class="resizer" id="dragMe"></div>
 
-            <!-- Right Panel: PDF -->
+            <!-- Right Panel: Transcription -->
             <section class="panel pdf-panel glass" id="right-panel">
-                <div class="panel-header">Diálogo / Roteiro</div>
-                <div id="pdf-container">
-                    <p class="placeholder-text">Faça o upload do PDF para visualizar o diálogo.</p>
-                    <canvas id="pdf-render"></canvas>
+                <div class="panel-header" style="display:flex; justify-content: space-between; align-items:center;">
+                    <span>Transcrição Interativa</span>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span id="status-indicator" style="font-size: 0.8rem; color: #94a3b8;">Aguardando...</span>
+                        <a id="btn-download-pdf" class="btn" style="display:none; padding: 0.3rem 0.6rem; font-size: 0.8rem; background: #8b5cf6;" href="#" download>Baixar PDF</a>
+                    </div>
+                </div>
+                <div id="transcription-container" style="flex: 1; overflow-y: auto; padding: 1rem; background: #0f172a; color: #f1f5f9;">
+                    <p class="placeholder-text" style="color:#64748b; text-align:center; margin-top:2rem;">
+                        Carregue um vídeo para iniciar a IA (Whisper)
+                    </p>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- PDF.js library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <!-- App Scripts -->
     <script src="/static/js/app.js"></script>
     <script src="/static/js/sync_engine.js"></script>

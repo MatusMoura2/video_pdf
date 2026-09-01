@@ -43,27 +43,80 @@ document.addEventListener('DOMContentLoaded', () => {
 
     resizer.addEventListener('mousedown', mouseDownHandler);
 
-    // 2. File Upload Handling
+    // 2. File Upload & Transcription Polling
     const videoUpload = document.getElementById('video-upload');
-    const pdfUpload = document.getElementById('pdf-upload');
     const videoEl = document.getElementById('main-video');
+    const statusIndicator = document.getElementById('status-indicator');
+    let pollingInterval = null;
 
     videoUpload.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if(!file) return;
         
-        // For local quick load without server upload for demo:
-        const url = URL.createObjectURL(file);
-        videoEl.src = url;
-    });
-
-    pdfUpload.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if(!file) return;
+        // 1. Set local video preview immediately
+        const localUrl = URL.createObjectURL(file);
+        videoEl.src = localUrl;
         
-        const url = URL.createObjectURL(file);
-        // Dispatch custom event to sync engine
-        const event = new CustomEvent('pdfLoaded', { detail: { url } });
-        document.dispatchEvent(event);
+        // 2. Upload to server to start transcription
+        statusIndicator.innerText = "Fazendo upload...";
+        statusIndicator.style.color = "#3b82f6"; // Blue
+        
+        const formData = new FormData();
+        formData.append("video", file);
+        
+        try {
+            const uploadRes = await fetch("/api/upload", {
+                method: "POST",
+                body: formData
+            });
+            const uploadData = await uploadRes.json();
+            
+            if (uploadData.status === "started") {
+                statusIndicator.innerText = "IA iniciada...";
+                pollStatus(uploadData.task_id);
+            } else {
+                statusIndicator.innerText = "Erro ao iniciar IA";
+                statusIndicator.style.color = "#ef4444"; // Red
+            }
+        } catch(err) {
+            console.error("Upload error:", err);
+            statusIndicator.innerText = "Erro no upload";
+            statusIndicator.style.color = "#ef4444";
+        }
     });
+    
+    function pollStatus(taskId) {
+        if(pollingInterval) clearInterval(pollingInterval);
+        
+        pollingInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`/api/transcribe/status/${taskId}`);
+                const data = await res.json();
+                
+                if (data.status === "processing") {
+                    statusIndicator.innerText = `🔄 ${data.progress}`;
+                } else if (data.status === "completed") {
+                    clearInterval(pollingInterval);
+                    statusIndicator.innerText = "✅ Transcrição Concluída";
+                    statusIndicator.style.color = "#22c55e"; // Green
+                    
+                    // Show PDF download button
+                    const pdfBtn = document.getElementById('btn-download-pdf');
+                    pdfBtn.style.display = "inline-block";
+                    pdfBtn.href = `/api/export/pdf/${taskId}`;
+                    
+                    // Trigger sync engine to load subtitles
+                    const event = new CustomEvent('transcriptionReady', { detail: { json_url: data.json_url } });
+                    document.dispatchEvent(event);
+                    
+                } else if (data.status === "error") {
+                    clearInterval(pollingInterval);
+                    statusIndicator.innerText = `❌ Erro: ${data.detail}`;
+                    statusIndicator.style.color = "#ef4444"; // Red
+                }
+            } catch(err) {
+                console.error("Polling error:", err);
+            }
+        }, 2000); // Poll every 2 seconds
+    }
 });

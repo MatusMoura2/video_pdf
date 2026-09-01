@@ -166,8 +166,38 @@ video {
     text-align: center;
 }
 
-/* Utility for dynamic highlight later */
-.highlight-line {
-    background-color: rgba(250, 204, 21, 0.4);
-    border-radius: 2px;
+/* PDF container styles can be repurposed/removed later, adding transcription styles */
+
+.transcript-segment {
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+    border: 1px solid transparent;
+}
+
+.transcript-segment:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.transcript-segment.active-segment {
+    background: rgba(59, 130, 246, 0.15); /* Primary color low opacity */
+    border-color: var(--primary-color);
+    transform: scale(1.02);
+}
+
+.segment-time {
+    color: var(--primary-color);
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 0.75rem;
+    display: inline-block;
+    min-width: 50px;
+}
+
+.segment-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
 }
