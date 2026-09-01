@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video PDF Player - Sincronizado</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Main Style -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header glass">
+            <div class="logo">Video PDF <span>Sync</span></div>
+            <div class="upload-controls">
+                <label for="video-upload" class="btn">Carregar Vídeo</label>
+                <input type="file" id="video-upload" accept="video/mp4,video/webm" hidden>
+                
+                <label for="pdf-upload" class="btn">Carregar PDF</label>
+                <input type="file" id="pdf-upload" accept="application/pdf" hidden>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="split-layout">
+            <!-- Left Panel: Video -->
+            <section class="panel video-panel glass" id="left-panel">
+                <div class="panel-header">Vídeo</div>
+                <div class="video-wrapper">
+                    <video id="main-video" controls>
+                        Seu navegador não suporta a tag de vídeo.
+                    </video>
+                </div>
+            </section>
+
+            <!-- Resizer Divider -->
+            <div class="resizer" id="dragMe"></div>
+
+            <!-- Right Panel: PDF -->
+            <section class="panel pdf-panel glass" id="right-panel">
+                <div class="panel-header">Diálogo / Roteiro</div>
+                <div id="pdf-container">
+                    <p class="placeholder-text">Faça o upload do PDF para visualizar o diálogo.</p>
+                    <canvas id="pdf-render"></canvas>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- PDF.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <!-- App Scripts -->
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/sync_engine.js"></script>
+</body>
+</html>
